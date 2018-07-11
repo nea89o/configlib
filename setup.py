@@ -5,10 +5,13 @@ find_packages
 with open('configlib/version.py') as f:
     _loc, _glob = {}, {}
     exec(f.read(), _loc, _glob)
-    version = {**_loc, **_glob}['version']
+    version = {**_loc, **_glob}['VERSION']
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
+
+with open('requirements-dev.txt') as f:
+    dev_requirements = f.read().splitlines()
 
 with open('README.md') as f:
     readme = f.read()
@@ -23,8 +26,12 @@ setup(
     version=str(version),
     install_requires=requirements,
     long_description=readme,
-    test_suite='tests.all_tests',
+    setup_requires=['pytest-runner', 'pytest-pylint'],
+    tests_require=['pytest', 'pylint'],
     license="MIT",
+    extras_require={
+        'dev': dev_requirements,
+    },
     packages=['configlib'],
     description="An easy python config manager",
     classifiers=[

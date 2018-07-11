@@ -1,21 +1,37 @@
-from typing import TypeVar, Type, Dict, List
+"""
+Implementations for the modules of :module:`configlib.model`
+"""
+
+from typing import Type, Dict, List
 
 from .model import Config, ConfigValueMissingException, InvalidConfigTypingException
 from .util import snake_case
 
-_T = TypeVar('_T', bound=Config)
 
-_T0 = TypeVar('_T0')
+def parse_list_impl(cls: Type[object], data, path='') -> list:
+    """
+    parse a list and reinterpret the individual elements according to `cls`
 
-
-def parse_list_impl(cls: Type[_T0], data, path=''):
+    :param cls: the type of each list element
+    :param data: the actual list elements
+    :param path: the path inside the config. used for error reporting
+    :return: the list with transformed elements.
+    """
     lis = []
     for i, item in enumerate(data):
-        list.append(parse_single_item(cls, item, path + '[' + str(i) + ']'))
+        lis.append(parse_single_item(cls, item, path + '[' + str(i) + ']'))
     return lis
 
 
-def parse_obj_impl(cls: Type[_T0], data, path='Config') -> _T0:
+def parse_obj_impl(cls: Type[object], data, path='Config') -> object:
+    """
+    parse a dict into an object according to `cls`
+
+    :param cls: the type of the resulting object
+    :param data: the dict object
+    :param path: the path inside the config. used for error reporting
+    :return: the parsed object
+    """
     obj = cls()
     annotations: Dict[str, Type] = obj.__annotations__
     for key, val_type in annotations.items():
@@ -26,14 +42,31 @@ def parse_obj_impl(cls: Type[_T0], data, path='Config') -> _T0:
     return obj
 
 
-def parse_dict_impl(val_type: Type[_T0], val, path) -> _T0:
+def parse_dict_impl(val_type: Type[object], val, path) -> dict:
+    """
+    Parse a dict and reinterpret the values according to `val_type`
+
+    :param val_type: the type of the values of the dict
+    :param val: the actual dict to be reinterpreted
+    :param path: the path inside the config. used for error reporting
+    :return: the reinterpreted dict
+    """
     dic = {}
     for key, value in val.items():
         dic[key] = parse_single_item(val_type, value, path + '[' + repr(key) + ']')
     return dic
 
 
-def parse_single_item(val_type: Type[_T0], val, path) -> _T0:
+# noinspection PyUnresolvedReferences
+def parse_single_item(val_type: Type[object], val, path):
+    """
+    dynamically parse an item into a dict, list, object or a primitive depending on `val_type`
+
+    :param val_type: the type to be discussed
+    :param val: the value to be parsed
+    :param path: the path inside the config. used for error reporting
+    :return: the parsed something
+    """
     if issubclass(val_type, (str, int, float)):
         return val
     if isinstance(val_type, List):
@@ -50,10 +83,15 @@ def parse_single_item(val_type: Type[_T0], val, path) -> _T0:
 
 
 class BaseConfig(Config):
+    """
+    A :class:`Config` implementation using type hints for parsing.
+    """
+
     @classmethod
     def get_name(cls) -> str:
         return snake_case(cls.__name__).upper()
 
     @classmethod
-    def parse_dict(cls: Type[_T], data: dict) -> _T:
+    def parse_dict(cls: Type['BaseConfig'], data: dict) -> 'BaseConfig':
+        # noinspection PyTypeChecker
         return parse_obj_impl(cls, data)
