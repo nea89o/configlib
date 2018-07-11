@@ -9,8 +9,8 @@ Examples
 {
     "config_var": "jo",
     "other_var": 3,
-    "SubConfig": {
-        "subconfivar": 10
+    "subConfig": {
+        "subconfigvar": 10
     }
 }
 ```
@@ -19,12 +19,13 @@ Examples
 ```py
 from configlib import BaseConfig
 
+class SubConfig(object):
+    subconfigvar: int
 
 class Config(BaseConfig):
     config_var: str
     other_var: int
-    class SubConfig:
-        subconfigvar: int
+    subConfig: SubConfig
 
 # Usage
 
