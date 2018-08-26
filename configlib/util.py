@@ -17,7 +17,7 @@ def parse_case(any_case: str) -> List[str]:
         return any_case.lower().split('_')
     if '-' in any_case:
         return any_case.lower().split('-')
-    return [word.lower() for word in re.split('(?<=[a-z0-9])(?=[A-Z])', any_case)]
+    return [word.lower() for word in re.sub('(?<=[a-z0-9])(?=[A-Z])', '\n', any_case).split('\n')]
 
 
 def snake_case(any_case: str) -> str:
