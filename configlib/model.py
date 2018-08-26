@@ -11,6 +11,12 @@ from typing import Type, Union, AnyStr, TextIO
 from configlib.util import snake_case
 
 
+class InvalidConfigEscapeException(Exception):
+    """
+    Some config uses an invalid escape like `$invalidescapecode:argument`
+    """
+
+
 class InvalidConfigTypingException(Exception):
     """
     The typing found in the given class is missing arguments.

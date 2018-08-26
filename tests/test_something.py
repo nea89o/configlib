@@ -1,4 +1,5 @@
 import json
+import os
 from unittest import TestCase
 
 from configlib.model_impl import BaseConfig
@@ -15,6 +16,12 @@ class SomeConfig(BaseConfig):
 
 test_dict = {
     'something': 'hmm',
+    'ye': {
+        'a': 1
+    }
+}
+env_dict = {
+    'something': '$env:ENVVAR',
     'ye': {
         'a': 1
     }
@@ -36,4 +43,9 @@ class TestSomething(TestCase):
 
     def test_text(self):
         conf: SomeConfig = SomeConfig.loads(json.dumps(test_dict))
+        verify_test_dict(conf)
+
+    def test_environ(self):
+        os.environ['ENVVAR'] = 'hmm'
+        conf: SomeConfig = SomeConfig.parse_dict(env_dict)
         verify_test_dict(conf)

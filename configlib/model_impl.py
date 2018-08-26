@@ -1,10 +1,11 @@
 """
 Implementations for the modules of :module:`configlib.model`
 """
-
+import os
 from typing import Type, Dict, List
 
-from .model import Config, ConfigValueMissingException, InvalidConfigTypingException
+from .model import Config, ConfigValueMissingException, InvalidConfigTypingException, \
+    InvalidConfigEscapeException
 from .util import snake_case
 
 
@@ -57,6 +58,23 @@ def parse_dict_impl(val_type: Type[object], val, path) -> dict:
     return dic
 
 
+_ESCAPES = {
+    'env': os.environ.get,
+}
+
+
+def _resolve_string(val: str):
+    if val[0] != '$':
+        return val
+    if val[1] == '$':
+        return val[1:]
+    descriptor, arg, *_ = val[1:].split(':', 2) + ['']
+    escape = _ESCAPES.get(descriptor)
+    if not escape:
+        raise InvalidConfigEscapeException(descriptor)
+    return escape(arg)
+
+
 # noinspection PyUnresolvedReferences
 def parse_single_item(val_type: Type[object], val, path):
     """
@@ -67,8 +85,13 @@ def parse_single_item(val_type: Type[object], val, path):
     :param path: the path inside the config. used for error reporting
     :return: the parsed something
     """
+    if isinstance(val, str):
+        if len(val) > 2 and val[0] == '$':
+            val = _resolve_string(val)
+
     if issubclass(val_type, (str, int, float)):
-        return val
+        # noinspection PyArgumentList
+        return val_type(val)
     if isinstance(val_type, List):
         if len(val_type.__args__) != 1:
             raise InvalidConfigTypingException(path + ': List must be supplied exactly one type')
