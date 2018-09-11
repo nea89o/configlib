@@ -92,11 +92,11 @@ def parse_single_item(val_type: Type[object], val, path):
     if issubclass(val_type, (str, int, float)):
         # noinspection PyArgumentList
         return val_type(val)
-    if isinstance(val_type, List):
+    if issubclass(val_type, List):
         if len(val_type.__args__) != 1:
             raise InvalidConfigTypingException(path + ': List must be supplied exactly one type')
         return parse_list_impl(val_type.__args__[0], val, path)
-    if isinstance(val_type, Dict):
+    if issubclass(val_type, Dict):
         if len(val_type.__args__) != 2:
             raise InvalidConfigTypingException(path + ': Dict must be supplied exactly two types')
         if val_type.__args__[0] != str:
